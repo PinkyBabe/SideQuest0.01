@@ -19,7 +19,7 @@ try {
     }
 
     // Validate required fields
-    $required_fields = ['firstName', 'lastName', 'email', 'password', 'roomNumber', 'officeName'];
+    $required_fields = ['firstName', 'lastName', 'email', 'password'];
     foreach ($required_fields as $field) {
         if (!isset($_POST[$field]) || empty(trim($_POST[$field]))) {
             throw new Exception("$field is required");
@@ -43,18 +43,16 @@ try {
 
     // Insert new faculty member
     $stmt = $conn->prepare("
-        INSERT INTO users (first_name, last_name, email, password, role, room_number, office_name) 
-        VALUES (?, ?, ?, ?, 'faculty', ?, ?)
+        INSERT INTO users (first_name, last_name, email, password, role) 
+        VALUES (?, ?, ?, ?, 'faculty')
     ");
 
     $stmt->bind_param(
-        "ssssss",
+        "ssss",
         $_POST['firstName'],
         $_POST['lastName'],
         $email,
-        $password,
-        $_POST['roomNumber'],
-        $_POST['officeName']
+        $password
     );
 
     if ($stmt->execute()) {

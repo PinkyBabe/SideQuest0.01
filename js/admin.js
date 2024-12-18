@@ -1,7 +1,25 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Admin JS loaded'); // Debug message
+    // Debug: Check if elements exist
+    console.log('Menu Toggle:', document.getElementById('menuToggle'));
+    console.log('Sidebar:', document.querySelector('.sidebar'));
+    console.log('Main Content:', document.querySelector('.main-content'));
+    console.log('Box:', document.querySelector('.box'));
 
-    // Hide all tabs except dashboard initially
+    // Sidebar toggle functionality
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const mainContent = document.querySelector('.main-content');
+    const box = document.querySelector('.box');
+
+    menuToggle.addEventListener('click', function(e) {
+        e.preventDefault(); // Prevent any default action
+        console.log('Menu clicked'); // Debug: Verify click is registered
+        sidebar.classList.toggle('hidden');
+        mainContent.classList.toggle('sidebar-hidden');
+        box.classList.toggle('sidebar-hidden');
+    });
+
+    // Tab switching functionality
     const tabContents = document.querySelectorAll('.tab-content');
     tabContents.forEach(tab => {
         if (tab.id !== 'dashboard') {
@@ -46,7 +64,6 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Collect form data
             const formData = new FormData(this);
-            formData.append('role', 'faculty'); // Automatically set role to faculty
             
             // Submit form data to server
             fetch('includes/add_faculty.php', {
@@ -59,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     alert('Faculty member added successfully!');
                     hideModal('addFacultyModal');
                     addFacultyForm.reset();
-                    updateFacultyCount(); // Update the count after successful addition
+                    updateFacultyCount();
                 } else {
                     alert(data.message || 'Error adding faculty member');
                 }
@@ -87,7 +104,6 @@ function hideModal(modalId) {
     }
 }
 
-// Logout modal functions
 function showLogoutConfirmation() {
     const modal = document.getElementById('logoutModal');
     if (modal) {
@@ -102,7 +118,7 @@ function closeLogoutModal() {
     }
 }
 
-// Update the faculty count display
+// Stats update function
 function updateFacultyCount() {
     fetch('includes/get_stats.php')
         .then(response => response.json())
