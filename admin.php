@@ -29,12 +29,7 @@ $faculty_query = "SELECT COUNT(*) as count FROM users WHERE role = 'faculty'";
 $result = $conn->query($faculty_query);
 if ($result) {
     $stats['faculty_count'] = $result->fetch_assoc()['count'];
-} else {
-    $stats['faculty_count'] = 0; // Default to 0 if query fails
 }
-
-// Add this debug line
-error_log("Faculty count: " . $stats['faculty_count']); // Check the count in error log
 
 // Get active posts count
 $posts_query = "SELECT COUNT(*) as count FROM posts WHERE status = 'active'";
@@ -135,8 +130,23 @@ $students = getStudentList();
         <div id="faculty" class="tab-content">
             <h2>Manage Faculty</h2>
             <button class="btn btn-primary" onclick="showModal('addFacultyModal')">Add Faculty</button>
-            <div id="facultyList">
-                <!-- Faculty list will be loaded here -->
+            
+            <div id="facultyList" class="faculty-list">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Room Number</th>
+                            <th>Office</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="facultyTableBody">
+                        <!-- Faculty list will be loaded here dynamically -->
+                    </tbody>
+                </table>
             </div>
         </div>
 
@@ -226,6 +236,40 @@ $students = getStudentList();
                 <div class="modal-buttons">
                     <button type="submit" class="btn btn-primary">Add Faculty</button>
                     <button type="button" class="btn btn-secondary" onclick="hideModal('addFacultyModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Faculty Modal -->
+    <div id="editFacultyModal" class="modal">
+        <div class="modal-content">
+            <h2>Edit Faculty</h2>
+            <form id="editFacultyForm">
+                <input type="hidden" id="editFacultyId" name="id">
+                <div class="form-group">
+                    <label for="editFirstName">First Name</label>
+                    <input type="text" id="editFirstName" name="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editLastName">Last Name</label>
+                    <input type="text" id="editLastName" name="lastName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editEmail">Email</label>
+                    <input type="email" id="editEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="editRoomNumber">Room Number</label>
+                    <input type="text" id="editRoomNumber" name="roomNumber">
+                </div>
+                <div class="form-group">
+                    <label for="editOfficeName">Office Name</label>
+                    <input type="text" id="editOfficeName" name="officeName">
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" onclick="hideModal('editFacultyModal')">Cancel</button>
                 </div>
             </form>
         </div>

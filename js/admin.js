@@ -6,18 +6,27 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Box:', document.querySelector('.box'));
 
     // Sidebar toggle functionality
-    const menuToggle = document.getElementById('menuToggle');
+    const menuToggle = document.querySelector('.hamburger');
     const sidebar = document.querySelector('.sidebar');
     const mainContent = document.querySelector('.main-content');
     const box = document.querySelector('.box');
+    let isSidebarHidden = false;
 
-    menuToggle.addEventListener('click', function(e) {
-        e.preventDefault(); // Prevent any default action
-        console.log('Menu clicked'); // Debug: Verify click is registered
-        sidebar.classList.toggle('hidden');
-        mainContent.classList.toggle('sidebar-hidden');
-        box.classList.toggle('sidebar-hidden');
-    });
+    if (menuToggle) {
+        menuToggle.addEventListener('click', function() {
+            isSidebarHidden = !isSidebarHidden;
+            
+            if (isSidebarHidden) {
+                sidebar.style.left = '-280px';
+                mainContent.style.marginLeft = '0';
+                box.style.left = '0';
+            } else {
+                sidebar.style.left = '0';
+                mainContent.style.marginLeft = '280px';
+                box.style.left = '280px';
+            }
+        });
+    }
 
     // Tab switching functionality
     const tabContents = document.querySelectorAll('.tab-content');
@@ -87,6 +96,41 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // Load faculty list when the faculty tab is clicked
+    const facultyTab = document.querySelector('li[data-tab="faculty"]');
+    if (facultyTab) {
+        facultyTab.addEventListener('click', loadFacultyList);
+    }
+
+    // Add edit faculty form submission handler
+    const editFacultyForm = document.getElementById('editFacultyForm');
+    if (editFacultyForm) {
+        editFacultyForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch('includes/update_faculty.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Faculty member updated successfully!');
+                    hideModal('editFacultyModal');
+                    loadFacultyList(); // Refresh the list
+                } else {
+                    alert(data.message || 'Error updating faculty member');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating faculty member');
+            });
+        });
+    }
 });
 
 // Modal functions
@@ -129,4 +173,108 @@ function updateFacultyCount() {
             }
         })
         .catch(error => console.error('Error updating stats:', error));
+}
+
+function loadFacultyList() {
+    fetch('includes/get_faculty_list.php')
+        .then(response => response.json())
+        .then(response => {
+            if (!response.success) {
+                throw new Error(response.message || 'Error loading faculty list');
+            }
+
+            const tableBody = document.getElementById('facultyTableBody');
+            if (!tableBody) return;
+
+            tableBody.innerHTML = '';
+            
+            if (response.data.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No faculty members found</td></tr>';
+                return;
+            }
+
+            response.data.forEach(faculty => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${faculty.first_name} ${faculty.last_name}</td>
+                    <td>${faculty.email}</td>
+                    <td>${faculty.room_number || '-'}</td>
+                    <td>${faculty.office_name || '-'}</td>
+                    <td>
+                        <span class="status-badge ${faculty.status === 'active' ? 'active' : 'inactive'}">
+                            ${faculty.status}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm" onclick="editFaculty(${faculty.id})">Edit</button>
+                        <button class="btn ${faculty.status === 'active' ? 'btn-danger' : 'btn-success'} btn-sm" 
+                            onclick="toggleFacultyStatus(${faculty.id}, '${faculty.status}')">
+                            ${faculty.status === 'active' ? 'Deactivate' : 'Activate'}
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading faculty list:', error);
+            const tableBody = document.getElementById('facultyTableBody');
+            if (tableBody) {
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Error loading faculty list</td></tr>';
+            }
+        });
+}
+
+function toggleFacultyStatus(facultyId, currentStatus) {
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    const confirmMessage = `Are you sure you want to ${currentStatus === 'active' ? 'deactivate' : 'activate'} this faculty member?`;
+    
+    if (confirm(confirmMessage)) {
+        fetch('includes/toggle_faculty_status.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                faculty_id: facultyId,
+                status: newStatus
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadFacultyList();
+                alert(data.message);
+            } else {
+                alert(data.message || 'Error updating faculty status');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error updating faculty status');
+        });
+    }
+}
+
+function editFaculty(facultyId) {
+    fetch(`includes/get_faculty.php?id=${facultyId}`)
+        .then(response => response.json())
+        .then(response => {
+            if (response.success) {
+                const faculty = response.faculty;
+                document.getElementById('editFacultyId').value = faculty.id;
+                document.getElementById('editFirstName').value = faculty.first_name;
+                document.getElementById('editLastName').value = faculty.last_name;
+                document.getElementById('editEmail').value = faculty.email;
+                document.getElementById('editRoomNumber').value = faculty.room_number || '';
+                document.getElementById('editOfficeName').value = faculty.office_name || '';
+                showModal('editFacultyModal');
+            } else {
+                throw new Error(response.message || 'Error loading faculty data');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading faculty data');
+        });
 }
