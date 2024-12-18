@@ -10,6 +10,8 @@ CREATE TABLE users (
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     role ENUM('admin', 'faculty', 'student') NOT NULL,
+    room_number VARCHAR(50) AFTER role,
+    office_name VARCHAR(100) AFTER room_number,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -72,4 +74,17 @@ CREATE TABLE activity_log (
     details TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- First, clear any existing admin users (optional)
+DELETE FROM users WHERE email = 'admin@example.com';
+
+-- Then insert the new admin user
+INSERT INTO users (first_name, last_name, email, password, role) 
+VALUES (
+    'Admin', 
+    'User', 
+    'admin@sidequest.com', 
+    'password', -- We'll replace this with a proper hash
+    'admin'
 ); 
