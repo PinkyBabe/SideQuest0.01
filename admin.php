@@ -45,10 +45,13 @@ if ($result) {
     $stats['completed_tasks'] = $result->fetch_assoc()['count'];
 }
 
-// Function to get student list
+// Function to get student list - updated with more details and pending status
 function getStudentList() {
     $conn = Database::getInstance();
-    $query = "SELECT id, first_name, last_name, email FROM users WHERE role = 'student'";
+    $query = "SELECT u.id, u.first_name, u.last_name, u.email, u.status, u.created_at 
+              FROM users u 
+              WHERE u.role = 'student' 
+              ORDER BY u.status ASC, u.created_at DESC";
     $result = $conn->query($query);
     
     $students = [];
@@ -161,16 +164,26 @@ $students = getStudentList();
                             <tr>
                                 <th>Name</th>
                                 <th>Email</th>
+                                <th>Status</th>
+                                <th>Registration Date</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php foreach ($students as $student): ?>
-                            <tr>
+                            <tr class="<?php echo $student['status'] === 'pending' ? 'pending-row' : ''; ?>">
                                 <td><?php echo htmlspecialchars($student['first_name'] . ' ' . $student['last_name']); ?></td>
                                 <td><?php echo htmlspecialchars($student['email']); ?></td>
+                                <td><?php echo ucfirst(htmlspecialchars($student['status'])); ?></td>
+                                <td><?php echo date('M d, Y', strtotime($student['created_at'])); ?></td>
                                 <td>
-                                    <button class="btn btn-secondary" onclick="viewStudent(<?php echo $student['id']; ?>)">View</button>
+                                    <?php if ($student['status'] === 'pending'): ?>
+                                        <button class="btn btn-success" onclick="approveStudent(<?php echo $student['id']; ?>)">Approve</button>
+                                        <button class="btn btn-danger" onclick="rejectStudent(<?php echo $student['id']; ?>)">Reject</button>
+                                    <?php else: ?>
+                                        <button class="btn btn-secondary" onclick="viewStudent(<?php echo $student['id']; ?>)">View</button>
+                                        <button class="btn btn-danger" onclick="deactivateStudent(<?php echo $student['id']; ?>)">Deactivate</button>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>

@@ -1,227 +1,110 @@
+// Navigation and UI functions for student interface
 document.addEventListener('DOMContentLoaded', function() {
-    // Menu toggle functionality
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebar = document.querySelector('.sidebar');
-    const mainContent = document.querySelector('.main-content');
-    const box = document.querySelector('.box');
-    let overlay;
+    // Set home as default visible section
+    navigateTo('home');
+    
+    // Initialize rating stars
+    initializeRatingStars();
+});
 
-    // Create overlay element
-    function createOverlay() {
-        overlay = document.createElement('div');
-        overlay.className = 'sidebar-overlay';
-        document.body.appendChild(overlay);
-    }
-    createOverlay();
-
-    // Toggle sidebar function
-    function toggleSidebar() {
-        sidebar.classList.toggle('hidden');
-        mainContent.classList.toggle('sidebar-hidden');
-        box.classList.toggle('sidebar-hidden');
-        
-        if (!sidebar.classList.contains('hidden')) {
-            overlay.classList.add('active');
-        } else {
-            overlay.classList.remove('active');
-        }
-        
-        localStorage.setItem('sidebarHidden', sidebar.classList.contains('hidden'));
-    }
-
-    // Event listeners for sidebar
-    if (menuToggle) {
-        menuToggle.addEventListener('click', toggleSidebar);
-    }
-    if (overlay) {
-        overlay.addEventListener('click', toggleSidebar);
-    }
-
-    // Tab navigation
-    const tabs = document.querySelectorAll('.sidebar li[data-tab]');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    function switchTab(tabId) {
-        tabContents.forEach(content => {
-            content.style.display = 'none';
-        });
-
-        tabs.forEach(tab => {
-            tab.classList.remove('active');
-        });
-
-        const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
-        const selectedContent = document.getElementById(tabId);
-        
-        if (selectedTab && selectedContent) {
-            selectedTab.classList.add('active');
-            selectedContent.style.display = 'block';
-        }
-
-        // Load content based on tab
-        switch(tabId) {
-            case 'quests':
-                loadQuests();
-                break;
-            case 'progress':
-                loadProgress();
-                break;
-            case 'achievements':
-                loadAchievements();
-                break;
-        }
-    }
-
-    // Add click handlers to tabs
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const tabId = tab.getAttribute('data-tab');
-            switchTab(tabId);
-        });
+function navigateTo(pageId) {
+    // Hide all containers
+    const containers = document.querySelectorAll('.container');
+    containers.forEach(container => {
+        container.style.display = 'none';
     });
 
-    // Quests functionality
-    async function loadQuests() {
-        try {
-            const filter = document.getElementById('questFilter').value;
-            const response = await fetch(`includes/get_quests.php?filter=${filter}`);
-            const data = await response.json();
-            
-            const questsList = document.getElementById('questsList');
-            if (questsList && data.success) {
-                questsList.innerHTML = data.quests.map(quest => `
-                    <div class="quest-card">
-                        <div class="quest-header">
-                            <h3 class="quest-title">${quest.title}</h3>
-                            <span class="quest-points">${quest.points} points</span>
-                        </div>
-                        <p>${quest.description}</p>
-                        <div class="quest-status ${quest.status}">${quest.status}</div>
-                        ${quest.status === 'available' ? 
-                            `<button class="btn btn-primary" onclick="startQuest(${quest.id})">Start Quest</button>` : 
-                            ''}
-                    </div>
-                `).join('');
-            }
-        } catch (error) {
-            console.error('Error loading quests:', error);
+    // Show selected container
+    const selectedPage = document.getElementById(pageId);
+    if (selectedPage) {
+        selectedPage.style.display = 'block';
+    }
+
+    // Update navigation active state
+    const navLinks = document.querySelectorAll('nav a');
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('onclick').includes(pageId)) {
+            link.classList.add('active');
         }
-    }
+    });
+}
 
-    // Progress functionality
-    async function loadProgress() {
-        try {
-            const response = await fetch('includes/get_progress.php');
-            const data = await response.json();
-            
-            const progressList = document.getElementById('progressList');
-            if (progressList && data.success) {
-                progressList.innerHTML = data.progress.map(item => `
-                    <div class="progress-card">
-                        <h3>${item.title}</h3>
-                        <div class="progress-bar">
-                            <div class="progress" style="width: ${item.progress}%"></div>
-                        </div>
-                        <p>${item.progress}% Complete</p>
-                    </div>
-                `).join('');
-            }
-        } catch (error) {
-            console.error('Error loading progress:', error);
+function showLogoutConfirmation() {
+    const modal = document.getElementById('logout-confirmation');
+    modal.style.display = 'block';
+}
+
+function hideLogoutConfirmation() {
+    const modal = document.getElementById('logout-confirmation');
+    modal.style.display = 'none';
+}
+
+function logout() {
+    window.location.href = 'includes/logout.php';
+}
+
+function showTab(tabName) {
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.textContent.toLowerCase().includes(tabName)) {
+            tab.classList.add('active');
         }
-    }
+    });
 
-    // Achievements functionality
-    async function loadAchievements() {
-        try {
-            const response = await fetch('includes/get_achievements.php');
-            const data = await response.json();
-            
-            const achievementsList = document.getElementById('achievementsList');
-            if (achievementsList && data.success) {
-                achievementsList.innerHTML = data.achievements.map(achievement => `
-                    <div class="achievement-card ${achievement.unlocked ? 'unlocked' : 'locked'}">
-                        <div class="achievement-icon">🏆</div>
-                        <div class="achievement-info">
-                            <h3>${achievement.title}</h3>
-                            <p>${achievement.description}</p>
-                        </div>
-                    </div>
-                `).join('');
-            }
-        } catch (error) {
-            console.error('Error loading achievements:', error);
-        }
-    }
+    // Here you would typically load the corresponding content
+    loadTabContent(tabName);
+}
 
-    // Logout functionality
-    function showLogoutConfirmation() {
-        const logoutModal = document.getElementById('logoutModal');
-        if (logoutModal) {
-            logoutModal.classList.add('show');
-        }
-    }
-
-    function closeLogoutModal() {
-        const logoutModal = document.getElementById('logoutModal');
-        if (logoutModal) {
-            logoutModal.classList.remove('show');
-        }
-    }
-
-    function confirmLogout() {
-        fetch('includes/auth.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'action=logout'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = 'index.php';
-            }
-        })
-        .catch(error => console.error('Logout error:', error));
-    }
-
-    // Add click handlers for logout
-    const dpImage = document.getElementById('dp');
-    const logoutMenuItem = document.querySelector('.sidebar ul li:last-child');
+function loadTabContent(tabName) {
+    const taskList = document.getElementById('task-list');
     
-    if (dpImage) {
-        dpImage.addEventListener('click', showLogoutConfirmation);
+    // Example of dynamic content loading
+    if (tabName === 'accepted') {
+        // Load accepted jobs
+        taskList.innerHTML = '<div class="empty-state"><p>No accepted jobs yet.</p></div>';
+    } else if (tabName === 'completed') {
+        // Load completed jobs
+        taskList.innerHTML = '<div class="empty-state"><p>No completed jobs yet.</p></div>';
     }
-    if (logoutMenuItem) {
-        logoutMenuItem.addEventListener('click', showLogoutConfirmation);
-    }
+}
 
-    // Add click handlers for logout modal buttons
-    const confirmLogoutBtn = document.querySelector('#logoutModal .btn-primary');
-    const cancelLogoutBtn = document.querySelector('#logoutModal .btn-secondary');
-    
-    if (confirmLogoutBtn) {
-        confirmLogoutBtn.addEventListener('click', confirmLogout);
-    }
-    if (cancelLogoutBtn) {
-        cancelLogoutBtn.addEventListener('click', closeLogoutModal);
-    }
+function initializeRatingStars() {
+    const stars = document.querySelectorAll('.star');
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = this.getAttribute('data-rating');
+            updateStars(rating);
+        });
+    });
+}
 
-    // Quest filter change handler
-    const questFilter = document.getElementById('questFilter');
-    if (questFilter) {
-        questFilter.addEventListener('change', loadQuests);
-    }
+function updateStars(rating) {
+    const stars = document.querySelectorAll('.star');
+    stars.forEach(star => {
+        const starRating = star.getAttribute('data-rating');
+        star.classList.toggle('selected', starRating <= rating);
+    });
+}
 
-    // Initialize
-    switchTab('dashboard');
-    
-    // Check localStorage for sidebar state
-    const sidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
-    if (sidebarHidden) {
-        sidebar.classList.add('hidden');
-        mainContent.classList.add('sidebar-hidden');
-        box.classList.add('sidebar-hidden');
-    }
-});
+function closeRatingModal() {
+    const modal = document.getElementById('rating-modal');
+    modal.style.display = 'none';
+}
+
+function submitRating() {
+    const selectedStars = document.querySelectorAll('.star.selected').length;
+    // Here you would typically send the rating to the server
+    console.log('Submitted rating:', selectedStars);
+    closeRatingModal();
+}
+
+// Make functions globally available
+window.navigateTo = navigateTo;
+window.showLogoutConfirmation = showLogoutConfirmation;
+window.hideLogoutConfirmation = hideLogoutConfirmation;
+window.logout = logout;
+window.showTab = showTab;
+window.closeRatingModal = closeRatingModal;
+window.submitRating = submitRating;

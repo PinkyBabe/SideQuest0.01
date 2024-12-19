@@ -6,27 +6,27 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Box:', document.querySelector('.box'));
 
     // Sidebar toggle functionality
-    const menuToggle = document.querySelector('.hamburger');
+    const menuToggle = document.querySelector('.menu-toggle');
     const sidebar = document.querySelector('.sidebar');
     const mainContent = document.querySelector('.main-content');
     const box = document.querySelector('.box');
-    let isSidebarHidden = false;
 
-    if (menuToggle) {
-        menuToggle.addEventListener('click', function() {
-            isSidebarHidden = !isSidebarHidden;
-            
-            if (isSidebarHidden) {
-                sidebar.style.left = '-280px';
-                mainContent.style.marginLeft = '0';
-                box.style.left = '0';
-            } else {
-                sidebar.style.left = '0';
-                mainContent.style.marginLeft = '280px';
-                box.style.left = '280px';
-            }
-        });
-    }
+    // Ensure sidebar starts hidden
+    sidebar.classList.remove('active');
+    mainContent.classList.remove('sidebar-active');
+
+    menuToggle.addEventListener('click', function() {
+        sidebar.classList.toggle('active');
+        mainContent.classList.toggle('sidebar-active');
+    });
+
+    // Close sidebar when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!sidebar.contains(e.target) && !menuToggle.contains(e.target) && sidebar.classList.contains('active')) {
+            sidebar.classList.remove('active');
+            mainContent.classList.remove('sidebar-active');
+        }
+    });
 
     // Tab switching functionality
     const tabContents = document.querySelectorAll('.tab-content');
@@ -281,4 +281,76 @@ function editFaculty(facultyId) {
 
 function logout() {
     window.location.href = 'includes/logout.php';
+}
+
+function approveStudent(studentId) {
+    if (confirm('Are you sure you want to approve this student?')) {
+        fetch('api/approve_student.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ studentId: studentId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error approving student: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error approving student');
+        });
+    }
+}
+
+function rejectStudent(studentId) {
+    if (confirm('Are you sure you want to reject this student?')) {
+        fetch('api/reject_student.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ studentId: studentId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error rejecting student: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error rejecting student');
+        });
+    }
+}
+
+function deactivateStudent(studentId) {
+    if (confirm('Are you sure you want to deactivate this student?')) {
+        fetch('api/deactivate_student.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ studentId: studentId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error deactivating student: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deactivating student');
+        });
+    }
 }

@@ -48,9 +48,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo json_encode(['success' => true]);
             exit;
             
+        case 'register':
+            $student_id = $_POST['student_id'];
+            
+            // Format: "20230123" (YearNumber)
+            if (!preg_match('/^\d{8}$/', $student_id)) {
+                echo json_encode(['success' => false, 'error' => 'Invalid student ID format. Please use YYYYXXXX format (e.g., 20230123)']);
+                exit;
+            }
+            
+            $firstName = $_POST['firstName'];
+            $lastName = $_POST['lastName'];
+            $email = $_POST['email'];
+            $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+            $role = 'student';
+            
+            try {
+                $conn = Database::getInstance();
+                $stmt = $conn->prepare("INSERT INTO users (student_id, first_name, last_name, email, password, role) VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("ssssss", $student_id, $firstName, $lastName, $email, $password, $role);
+                
+                if ($stmt->execute()) {
+                    echo json_encode(['success' => true]);
+                } else {
+                    echo json_encode(['success' => false, 'error' => 'Registration failed']);
+                }
+            } catch (Exception $e) {
+                echo json_encode(['success' => false, 'error' => 'Registration failed: ' . $e->getMessage()]);
+            }
+            break;
+            
         default:
             echo json_encode(['success' => false, 'error' => 'Invalid action']);
-            exit;
+            break;
     }
+} else {
+    echo json_encode(['success' => false, 'error' => 'Invalid request method']);
 }
 ?>

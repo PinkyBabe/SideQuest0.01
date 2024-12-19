@@ -15,5 +15,16 @@ function sanitize($data) {
     return $data;
 }
 
+function logAction($action, $description) {
+    $conn = Database::getInstance();
+    $userId = $_SESSION['user_id'] ?? 0;
+    
+    $query = "INSERT INTO activity_log (user_id, action, description, created_at) VALUES (?, ?, ?, NOW())";
+    $stmt = $conn->prepare($query);
+    $stmt->bind_param('iss', $userId, $action, $description);
+    $stmt->execute();
+    $stmt->close();
+}
+
 // Add any other helper functions you need
 ?>

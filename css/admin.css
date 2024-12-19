@@ -74,19 +74,16 @@ body {
 /* Sidebar styles */
 .sidebar {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 280px;
-    height: 100vh;
-    background: linear-gradient(to bottom, rgb(236, 159, 5), rgb(255, 78, 0));
-    color: white;
-    padding: 0;
-    z-index: 99;
+    left: -250px;
+    width: 250px;
+    height: 100%;
+    background: #333;
     transition: left 0.3s ease;
+    z-index: 999;
 }
 
-.sidebar.hidden {
-    left: -280px;
+.sidebar.active {
+    left: 0;
 }
 
 .sidebar-header {
@@ -120,7 +117,7 @@ body {
 
 /* Main content styles */
 .main-content {
-    margin-left: 280px;
+    margin-left: 0;
     padding: 100px 20px 20px;
     transition: margin-left 0.3s ease;
     min-height: 100vh;
@@ -129,8 +126,8 @@ body {
     z-index: 1;
 }
 
-.main-content.sidebar-hidden {
-    margin-left: 0;
+.main-content.sidebar-active {
+    margin-left: 250px;
 }
 
 /* Stats Container */
@@ -285,4 +282,36 @@ body {
 .btn-sm {
     padding: 4px 8px;
     font-size: 0.9em;
+}
+
+.pending-row {
+    background-color: #fff3cd;
+}
+
+.btn-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.menu-toggle {
+    cursor: pointer;
+    padding: 10px;
+    z-index: 1000;
+}
+
+.menu-toggle:hover {
+    opacity: 0.8;
 }
