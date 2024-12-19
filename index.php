@@ -10,7 +10,7 @@
     <div class="container">
         <div class="form-container">
             <h1>SIDEQUEST</h1>
-            <form action="includes/auth.php" method="POST">
+            <form id="loginForm">
                 <input type="hidden" name="action" value="login">
                 <div class="form-group">
                     <input type="email" name="email" required placeholder="Email">
@@ -23,5 +23,30 @@
             <p>Don't have an account? <a href="register.php">Register here</a></p>
         </div>
     </div>
+
+    <script>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('includes/auth.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.role + '.php';
+            } else {
+                alert(data.error || 'Login failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred during login');
+        });
+    });
+    </script>
 </body>
 </html> 

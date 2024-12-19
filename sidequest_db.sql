@@ -1,5 +1,6 @@
--- Create the database
-CREATE DATABASE IF NOT EXISTS sidequest_db;
+-- Drop the existing database and recreate
+DROP DATABASE IF EXISTS sidequest_db;
+CREATE DATABASE sidequest_db;
 USE sidequest_db;
 
 -- Users table
@@ -10,6 +11,8 @@ CREATE TABLE users (
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     role ENUM('admin', 'faculty', 'student') NOT NULL,
+    room_number VARCHAR(50),
+    office_name VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -24,7 +27,7 @@ CREATE TABLE posts (
     FOREIGN KEY (faculty_id) REFERENCES users(id)
 );
 
--- Tasks/Quests table
+-- Tasks table
 CREATE TABLE tasks (
     id INT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(255) NOT NULL,
@@ -39,37 +42,18 @@ CREATE TABLE student_progress (
     id INT PRIMARY KEY AUTO_INCREMENT,
     student_id INT,
     task_id INT,
-    progress INT DEFAULT 0,
     status ENUM('not_started', 'in_progress', 'completed') DEFAULT 'not_started',
     completed_at TIMESTAMP NULL,
     FOREIGN KEY (student_id) REFERENCES users(id),
     FOREIGN KEY (task_id) REFERENCES tasks(id)
 );
 
--- Achievements table
-CREATE TABLE achievements (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    points_required INT DEFAULT 0
+-- Insert default admin user
+INSERT INTO users (first_name, last_name, email, password, role) 
+VALUES (
+    'Admin', 
+    'User', 
+    'admin@sidequest.com', 
+    'password',
+    'admin'
 );
-
--- Student Achievements table
-CREATE TABLE student_achievements (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    student_id INT,
-    achievement_id INT,
-    unlocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (student_id) REFERENCES users(id),
-    FOREIGN KEY (achievement_id) REFERENCES achievements(id)
-);
-
--- Activity Log table
-CREATE TABLE activity_log (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT,
-    action VARCHAR(255) NOT NULL,
-    details TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-); 
