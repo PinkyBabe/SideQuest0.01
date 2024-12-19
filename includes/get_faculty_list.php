@@ -15,8 +15,8 @@ $response = [
 try {
     $conn = Database::getInstance();
     
-    // Simpler query that works with basic user fields
-    $query = "SELECT id, first_name, last_name, email, 
+    // Updated query to include room_number and office_name
+    $query = "SELECT id, first_name, last_name, email, room_number, office_name,
               CASE WHEN status IS NULL OR status = 1 THEN 'active' ELSE 'inactive' END as status 
               FROM users 
               WHERE role = 'faculty' 
@@ -27,9 +27,9 @@ try {
     if ($result) {
         $faculty_list = [];
         while ($row = $result->fetch_assoc()) {
-            // Add default values for room_number and office_name
-            $row['room_number'] = '-';
-            $row['office_name'] = '-';
+            // Use actual values from database or default to '-' if null
+            $row['room_number'] = $row['room_number'] ?: '-';
+            $row['office_name'] = $row['office_name'] ?: '-';
             $faculty_list[] = $row;
         }
         $response['success'] = true;

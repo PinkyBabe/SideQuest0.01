@@ -278,3 +278,7 @@ function editFaculty(facultyId) {
             alert('Error loading faculty data');
         });
 }
+
+function logout() {
+    window.location.href = 'includes/logout.php';
+}

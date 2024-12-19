@@ -1,216 +1,188 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Menu toggle functionality
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebar = document.querySelector('.sidebar');
-    const mainContent = document.querySelector('.main-content');
-    const box = document.querySelector('.box');
-    let overlay;
+// Navigation and Initialization
+document.addEventListener('DOMContentLoaded', () => {
+    // Set initial state
+    navigateTo('profile');
+});
 
-    // Create overlay element
-    function createOverlay() {
-        overlay = document.createElement('div');
-        overlay.className = 'sidebar-overlay';
-        document.body.appendChild(overlay);
-    }
-    createOverlay();
-
-    // Toggle sidebar function
-    function toggleSidebar() {
-        sidebar.classList.toggle('hidden');
-        mainContent.classList.toggle('sidebar-hidden');
-        box.classList.toggle('sidebar-hidden');
-        
-        if (!sidebar.classList.contains('hidden')) {
-            overlay.classList.add('active');
-        } else {
-            overlay.classList.remove('active');
+function navigateTo(sectionId) {
+    // Only toggle the main content sections
+    document.querySelectorAll('main, section').forEach(section => {
+        if (section.id === 'profile' || section.id === 'workspace') {
+            section.style.display = section.id === sectionId ? 'block' : 'none';
         }
-        
-        localStorage.setItem('sidebarHidden', sidebar.classList.contains('hidden'));
-    }
-
-    // Event listeners for sidebar
-    if (menuToggle) {
-        menuToggle.addEventListener('click', toggleSidebar);
-    }
-    if (overlay) {
-        overlay.addEventListener('click', toggleSidebar);
-    }
-
-    // Tab navigation
-    const tabs = document.querySelectorAll('.sidebar li[data-tab]');
-    const tabContents = document.querySelectorAll('.tab-content');
-
-    function switchTab(tabId) {
-        tabContents.forEach(content => {
-            content.style.display = 'none';
-        });
-
-        tabs.forEach(tab => {
-            tab.classList.remove('active');
-        });
-
-        const selectedTab = document.querySelector(`[data-tab="${tabId}"]`);
-        const selectedContent = document.getElementById(tabId);
-        
-        if (selectedTab && selectedContent) {
-            selectedTab.classList.add('active');
-            selectedContent.style.display = 'block';
-        }
-
-        // Load content based on tab
-        switch(tabId) {
-            case 'posts':
-                loadPosts();
-                break;
-            case 'students':
-                loadStudents();
-                break;
-            case 'tasks':
-                loadTasks();
-                break;
-        }
-    }
-
-    // Add click handlers to tabs
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const tabId = tab.getAttribute('data-tab');
-            switchTab(tabId);
-        });
     });
 
-    // Logout functionality
-    function showLogoutConfirmation() {
-        const logoutModal = document.getElementById('logoutModal');
-        if (logoutModal) {
-            logoutModal.classList.add('show');
+    // Update active state in navigation
+    document.querySelectorAll('nav a').forEach(link => {
+        if (link.getAttribute('onclick').includes(sectionId)) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
         }
-    }
+    });
+}
 
-    function closeLogoutModal() {
-        const logoutModal = document.getElementById('logoutModal');
-        if (logoutModal) {
-            logoutModal.classList.remove('show');
-        }
-    }
+// Post Management
+function expandPostArea() {
+    document.getElementById('post_textarea').style.display = 'none';
+    document.getElementById('expanded_post').classList.remove('hidden');
+}
 
-    function confirmLogout() {
-        fetch('includes/auth.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'action=logout'
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = 'index.php';
-            }
-        })
-        .catch(error => console.error('Logout error:', error));
-    }
+function collapsePostArea() {
+    document.getElementById('post_textarea').style.display = 'block';
+    document.getElementById('expanded_post').classList.add('hidden');
+    resetPostForm();
+}
 
-    // Posts Management
-    async function loadPosts() {
-        try {
-            const response = await fetch('includes/get_posts.php');
-            const data = await response.json();
-            
-            const postsList = document.getElementById('postsList');
-            if (postsList && data.success) {
-                postsList.innerHTML = data.posts.map(post => `
-                    <div class="post-card">
-                        <div class="post-header">
-                            <h3 class="post-title">${post.title}</h3>
-                            <span class="post-date">${post.created_at}</span>
-                        </div>
-                        <div class="post-content">${post.content}</div>
-                        <div class="post-actions">
-                            <button class="btn btn-primary" onclick="editPost(${post.id})">Edit</button>
-                            <button class="btn btn-secondary" onclick="deletePost(${post.id})">Delete</button>
-                        </div>
-                    </div>
-                `).join('');
-            }
-        } catch (error) {
-            console.error('Error loading posts:', error);
-        }
-    }
+function toggleSpecifyField() {
+    const jobDescription = document.getElementById('job_description');
+    const specifyField = document.getElementById('specify_job');
+    specifyField.classList.toggle('hidden', jobDescription.value !== 'Others');
+}
 
-    // Students List
-    async function loadStudents() {
-        try {
-            const response = await fetch('includes/get_students.php');
-            const data = await response.json();
-            
-            const studentsList = document.getElementById('studentsList');
-            if (studentsList && data.success) {
-                studentsList.innerHTML = data.students.map(student => `
-                    <div class="student-card">
-                        <h3>${student.name}</h3>
-                        <p>Email: ${student.email}</p>
-                        <p>Progress: ${student.progress}%</p>
-                    </div>
-                `).join('');
-            }
-        } catch (error) {
-            console.error('Error loading students:', error);
-        }
-    }
+function resetPostForm() {
+    document.getElementById('expanded_textarea').value = '';
+    document.getElementById('job_description').value = '';
+    document.getElementById('specify_job').value = '';
+    document.getElementById('specify_job').classList.add('hidden');
+}
 
-    // Tasks Management
-    async function loadTasks() {
-        try {
-            const response = await fetch('includes/get_tasks.php');
-            const data = await response.json();
-            
-            const tasksList = document.getElementById('tasksList');
-            if (tasksList && data.success) {
-                tasksList.innerHTML = data.tasks.map(task => `
-                    <div class="task-card">
-                        <h3>${task.title}</h3>
-                        <p>${task.description}</p>
-                        <div class="task-status ${task.status}">${task.status}</div>
-                    </div>
-                `).join('');
-            }
-        } catch (error) {
-            console.error('Error loading tasks:', error);
-        }
-    }
-
-    // Add click handlers for logout
-    const dpImage = document.getElementById('dp');
-    const logoutMenuItem = document.querySelector('.sidebar ul li:last-child');
+function submitPost() {
+    const description = document.getElementById('expanded_textarea').value;
+    const jobType = document.getElementById('job_description').value;
     
-    if (dpImage) {
-        dpImage.addEventListener('click', showLogoutConfirmation);
-    }
-    if (logoutMenuItem) {
-        logoutMenuItem.addEventListener('click', showLogoutConfirmation);
+    if (!description || !jobType) {
+        alert('Please fill in all required fields');
+        return;
     }
 
-    // Add click handlers for logout modal buttons
-    const confirmLogoutBtn = document.querySelector('#logoutModal .btn-primary');
-    const cancelLogoutBtn = document.querySelector('#logoutModal .btn-secondary');
-    
-    if (confirmLogoutBtn) {
-        confirmLogoutBtn.addEventListener('click', confirmLogout);
-    }
-    if (cancelLogoutBtn) {
-        cancelLogoutBtn.addEventListener('click', closeLogoutModal);
-    }
+    const post = createPostElement({
+        description,
+        jobType,
+        status: 'pending'
+    });
 
-    // Initialize
-    switchTab('dashboard');
+    document.getElementById('posts-container').insertBefore(
+        post, 
+        document.getElementById('posts-container').firstChild
+    );
+
+    // Also add to workspace
+    addTaskToWorkspace({
+        description,
+        jobType,
+        status: 'pending'
+    });
+
+    collapsePostArea();
+}
+
+function createPostElement(postData) {
+    const post = document.createElement('div');
+    post.id = 'post_bar';
+    post.innerHTML = `
+        <div>
+            <img src="https://tse2.mm.bing.net/th?id=OIP.yYUwl3GDU07Q5J5ttyW9fQHaHa&pid=Api&P=0&h=220" alt="profile picture">
+        </div>
+        <div id="post_content">
+            <div id="post_name">Rey Sinabian</div>
+            <br>
+            ${postData.description}
+            <div class="post-type">Job Type: ${postData.jobType}</div>
+        </div>
+    `;
+    return post;
+}
+
+// Workspace Management
+function addTaskToWorkspace(taskData) {
+    const task = document.createElement('div');
+    task.className = 'task-item';
+    task.innerHTML = `
+        <div class="task-content">
+            <div class="task-header">
+                <span class="status-badge ${taskData.status}">${taskData.status.toUpperCase()}</span>
+            </div>
+            <div class="task-description">${taskData.description}</div>
+            <div class="task-type">
+                ${taskData.jobType}
+            </div>
+        </div>
+    `;
+    document.getElementById('task-list').appendChild(task);
+}
+
+// Task Management
+function createTaskElement(task) {
+    const taskElement = document.createElement('div');
+    taskElement.className = 'task-item';
+    taskElement.dataset.taskId = task.id;
     
-    // Check localStorage for sidebar state
-    const sidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
-    if (sidebarHidden) {
-        sidebar.classList.add('hidden');
-        mainContent.classList.add('sidebar-hidden');
-        box.classList.add('sidebar-hidden');
+    const statusClass = task.status.toLowerCase();
+    const actions = task.status === 'ACCEPTED' ? 
+        `<button onclick="completeTask(${task.id})" class="complete-btn">Mark as Complete</button>` : '';
+
+    taskElement.innerHTML = `
+        <div class="task-content">
+            <div class="task-header">
+                <span class="status-badge ${statusClass}">${task.status}</span>
+            </div>
+            <div class="task-description">${task.description}</div>
+            ${task.assignedTo ? `<div class="assigned-to">Accepted by: ${task.assignedTo}</div>` : ''}
+            <div class="task-actions">
+                ${actions}
+            </div>
+        </div>
+    `;
+
+    return taskElement;
+}
+
+function completeTask(taskId) {
+    showRatingModal(taskId);
+}
+
+// Rating System
+function showRatingModal(taskId) {
+    const modal = document.getElementById('rating-modal');
+    modal.style.display = 'block';
+    modal.dataset.taskId = taskId;
+
+    // Reset stars
+    document.querySelectorAll('.star').forEach(star => {
+        star.classList.remove('selected');
+        star.onclick = () => selectRating(star.dataset.rating);
+    });
+}
+
+function selectRating(rating) {
+    document.querySelectorAll('.star').forEach(star => {
+        star.classList.toggle('selected', star.dataset.rating <= rating);
+    });
+}
+
+// Logout handling
+function showLogoutConfirmation() {
+    document.getElementById('logout-confirmation').style.display = 'block';
+}
+
+function hideLogoutConfirmation() {
+    document.getElementById('logout-confirmation').style.display = 'none';
+}
+
+function logout() {
+    // Show loading state
+    const logoutBtn = document.querySelector('#logout-confirmation .btn-primary');
+    logoutBtn.textContent = 'Logging out...';
+    logoutBtn.disabled = true;
+
+    // Redirect to logout handler
+    window.location.href = 'includes/logout.php';
+}
+
+// Close modals when clicking outside
+window.onclick = (event) => {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
     }
-});
+};

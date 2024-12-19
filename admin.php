@@ -194,8 +194,8 @@ $students = getStudentList();
             <h2>Confirm Logout</h2>
             <p>Are you sure you want to logout?</p>
             <div class="modal-buttons">
-                <button class="btn btn-primary" onclick="confirmLogout()">Yes, Logout</button>
-                <button class="btn btn-secondary" onclick="closeLogoutModal()">Cancel</button>
+                <button onclick="logout()" class="btn btn-danger">Logout</button>
+                <button onclick="closeLogoutModal()" class="btn btn-secondary">Cancel</button>
             </div>
         </div>
     </div>
@@ -236,40 +236,6 @@ $students = getStudentList();
                 <div class="modal-buttons">
                     <button type="submit" class="btn btn-primary">Add Faculty</button>
                     <button type="button" class="btn btn-secondary" onclick="hideModal('addFacultyModal')">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Edit Faculty Modal -->
-    <div id="editFacultyModal" class="modal">
-        <div class="modal-content">
-            <h2>Edit Faculty</h2>
-            <form id="editFacultyForm">
-                <input type="hidden" id="editFacultyId" name="id">
-                <div class="form-group">
-                    <label for="editFirstName">First Name</label>
-                    <input type="text" id="editFirstName" name="firstName" required>
-                </div>
-                <div class="form-group">
-                    <label for="editLastName">Last Name</label>
-                    <input type="text" id="editLastName" name="lastName" required>
-                </div>
-                <div class="form-group">
-                    <label for="editEmail">Email</label>
-                    <input type="email" id="editEmail" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="editRoomNumber">Room Number</label>
-                    <input type="text" id="editRoomNumber" name="roomNumber">
-                </div>
-                <div class="form-group">
-                    <label for="editOfficeName">Office Name</label>
-                    <input type="text" id="editOfficeName" name="officeName">
-                </div>
-                <div class="modal-buttons">
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                    <button type="button" class="btn btn-secondary" onclick="hideModal('editFacultyModal')">Cancel</button>
                 </div>
             </form>
         </div>
