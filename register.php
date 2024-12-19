@@ -10,12 +10,8 @@
     <div class="container">
         <div class="form-container">
             <h1>REGISTER</h1>
-            <form id="registerForm" action="includes/auth.php" method="POST">
+            <form action="includes/auth.php" method="POST">
                 <input type="hidden" name="action" value="register">
-                <input type="hidden" name="role" value="student">
-                <div class="form-group">
-                    <input type="text" name="student_id" required placeholder="Student ID">
-                </div>
                 <div class="form-group">
                     <input type="text" name="firstName" required placeholder="First Name">
                 </div>
@@ -23,19 +19,22 @@
                     <input type="text" name="lastName" required placeholder="Last Name">
                 </div>
                 <div class="form-group">
-                    <input type="email" name="email" required placeholder="School Email">
+                    <input type="email" name="email" required placeholder="Email">
                 </div>
                 <div class="form-group">
                     <input type="password" name="password" required placeholder="Password">
                 </div>
                 <div class="form-group">
-                    <input type="password" name="confirm_password" required placeholder="Confirm Password">
+                    <select name="role" required>
+                        <option value="">Select Role</option>
+                        <option value="student">Student</option>
+                        <option value="faculty">Faculty</option>
+                    </select>
                 </div>
                 <button type="submit">Register</button>
             </form>
             <p>Already have an account? <a href="index.php">Login here</a></p>
         </div>
     </div>
-    <script src="js/register.js"></script>
 </body>
 </html> 

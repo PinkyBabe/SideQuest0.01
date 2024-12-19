@@ -10,7 +10,8 @@
     <div class="container">
         <div class="form-container">
             <h1>SIDEQUEST</h1>
-            <form id="loginForm">
+            <div id="error-message" style="color: red; margin-bottom: 10px; display: none;"></div>
+            <form id="loginForm" action="includes/auth.php" method="POST">
                 <input type="hidden" name="action" value="login">
                 <div class="form-group">
                     <input type="email" name="email" required placeholder="Email">
@@ -29,22 +30,36 @@
         e.preventDefault();
         
         const formData = new FormData(this);
+        const errorDiv = document.getElementById('error-message');
         
-        fetch('includes/auth.php', {
+        // Get the form's action URL
+        const actionUrl = this.getAttribute('action');
+        
+        fetch(actionUrl, {
             method: 'POST',
-            body: formData
+            body: formData,
+            credentials: 'same-origin' // Include cookies
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(text || 'Server error occurred');
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 window.location.href = data.role + '.php';
             } else {
-                alert(data.error || 'Login failed');
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = data.error || 'Login failed';
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('An error occurred during login');
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = 'An error occurred during login. Please try again.';
         });
     });
     </script>
